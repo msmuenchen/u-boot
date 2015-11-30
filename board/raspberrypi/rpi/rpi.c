@@ -77,108 +77,84 @@ struct msg_get_clock_rate {
 /* See comments in mbox.h for data source */
 static const struct {
 	const char *name;
-	const char *fdtfile;
 	bool has_onboard_eth;
 } models[] = {
 	[0] = {
 		"Unknown model",
-#ifdef CONFIG_BCM2836
-		"bcm2836-rpi-other.dtb",
-#else
-		"bcm2835-rpi-other.dtb",
-#endif
 		false,
 	},
 #ifdef CONFIG_BCM2836
 	[BCM2836_BOARD_REV_2_B] = {
 		"2 Model B",
-		"bcm2836-rpi-2-b.dtb",
 		true,
 	},
 #else
 	[BCM2835_BOARD_REV_B_I2C0_2] = {
 		"Model B (no P5)",
-		"bcm2835-rpi-b-i2c0.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_I2C0_3] = {
 		"Model B (no P5)",
-		"bcm2835-rpi-b-i2c0.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_I2C1_4] = {
 		"Model B",
-		"bcm2835-rpi-b.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_I2C1_5] = {
 		"Model B",
-		"bcm2835-rpi-b.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_I2C1_6] = {
 		"Model B",
-		"bcm2835-rpi-b.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_A_7] = {
 		"Model A",
-		"bcm2835-rpi-a.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_A_8] = {
 		"Model A",
-		"bcm2835-rpi-a.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_A_9] = {
 		"Model A",
-		"bcm2835-rpi-a.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_B_REV2_d] = {
 		"Model B rev2",
-		"bcm2835-rpi-b-rev2.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_REV2_e] = {
 		"Model B rev2",
-		"bcm2835-rpi-b-rev2.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_REV2_f] = {
 		"Model B rev2",
-		"bcm2835-rpi-b-rev2.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_B_PLUS] = {
 		"Model B+",
-		"bcm2835-rpi-b-plus.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_CM] = {
 		"Compute Module",
-		"bcm2835-rpi-cm.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_A_PLUS] = {
 		"Model A+",
-		"bcm2835-rpi-a-plus.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_B_PLUS_13] = {
 		"Model B+",
-		"bcm2835-rpi-b-plus.dtb",
 		true,
 	},
 	[BCM2835_BOARD_REV_CM_14] = {
 		"Compute Module",
-		"bcm2835-rpi-cm.dtb",
 		false,
 	},
 	[BCM2835_BOARD_REV_A_PLUS_15] = {
 		"Model A+",
-		"bcm2835-rpi-a-plus.dtb",
 		false,
 	},
 #endif
@@ -203,17 +179,6 @@ int dram_init(void)
 	gd->ram_size = msg->get_arm_mem.body.resp.mem_size;
 
 	return 0;
-}
-
-static void set_fdtfile(void)
-{
-	const char *fdtfile;
-
-	if (getenv("fdtfile"))
-		return;
-
-	fdtfile = models[rpi_board_rev].fdtfile;
-	setenv("fdtfile", fdtfile);
 }
 
 static void set_usbethaddr(void)
@@ -254,7 +219,6 @@ static void set_board_info(void)
 
 int misc_init_r(void)
 {
-	set_fdtfile();
 	set_usbethaddr();
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	set_board_info();
