@@ -259,6 +259,72 @@ int misc_init_r(void)
 #ifdef CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG
 	set_board_info();
 #endif
+
+	/*
+	 * The RPi start.elf passes important system configuration
+	 * like memory sizes and LED GPIO assignments to the kernel
+	 * via kernel command line.
+	 *
+	 * Therefore we have to parse the passed ATAG or FDT to get the
+	 * commandline and pass it through to script-land via the env
+	 * variable "bootargs_orig" so it can be passed on.
+	 *
+	 * By default, start.elf assumes a non-DT capable kernel and
+	 * passes the commandline via ATAG; this requires u-boot to
+	 * load the FDT from /boot and pass it on. This works if no
+	 * overlays have been passed through, but once overlays are in
+	 * the mix, stuff gets complicated to do in u-boot.
+	 *
+	 * To force start.elf to pass a processed, ready-to-go DT,
+	 * you have to use the mkknlimg tool on the u-boot image:
+	 * ./mkknlimg --dtok u-boot.bin /boot/u-boot.bin
+	 *
+	 * mkknlimg can be obtained from https://github.com/raspberrypi/tools/blob/master/mkimage/knlinfo
+	 *
+	 * User scripts can check for successful bootargs retrieval
+	 * in the env variable pi_bootmode, which is either fdt, atag
+	 * or unknown in case of an error.
+	 *
+	 * The location 0x100 is hard-coded in start.elf, and it is
+	 * the same as in the default bootscripts, so you only have
+	 * to omit the fatload command loading the raw FDT to get
+	 * going.
+	 */
+
+	void* ptr = (char*) 0x100;
+	struct tag_header* atag_ptr = ptr;
+	setenv("pi_bootmode","unknown");
+
+	if(atag_ptr->tag != ATAG_CORE) {
+		if(atag_ptr->size == be32_to_cpu(FDT_MAGIC)) {
+			set_working_fdt_addr((ulong) ptr);
+			int nodeoffset = fdt_path_offset(working_fdt, "/chosen");
+			int len;
+			const void* nodep = fdt_getprop(working_fdt, nodeoffset, "bootargs", &len);
+			if(len==0) {
+				printf("WARNING: Could not determine bootargs from FDT!\n");
+			} else {
+				printf("Set bootargs_orig from FDT\n");
+				setenv("bootargs_orig", (char*) nodep);
+				setenv("pi_bootmode","fdt");
+			}
+		} else {
+			printf("Warning: start.elf did not pass ATAG or FDT parameters\n");
+		}
+	} else {
+		while(atag_ptr->tag != ATAG_NONE) {
+			printf("at %p, have %x (len %x)\n",atag_ptr,atag_ptr->tag, atag_ptr->size);
+			if(atag_ptr->tag == ATAG_CMDLINE) {
+				char* old_cmdline = ptr + 8;
+				printf("Set bootargs_orig from ATAG\n");
+				setenv("bootargs_orig", old_cmdline);
+				setenv("pi_bootmode", "atag");
+			}
+			ptr = ptr + (atag_ptr->size * 4);
+			atag_ptr=ptr;
+		}
+	}
+
 	return 0;
 }
 
