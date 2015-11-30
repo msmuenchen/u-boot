@@ -1,0 +1,8 @@
+u-boot for Debian
+-----------------
+
+This is the latest u-boot, compiled and packaged into a special package for
+Raspberry Pi, supporting both Pi1 and Pi2 with a single package.
+
+ -- Marco Schuster <m.schuster91@googlemail.com>  Sun, 29 Nov 2015 19:52:59 +0000
+

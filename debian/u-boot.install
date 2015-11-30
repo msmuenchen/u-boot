@@ -1,0 +1,8 @@
+boot/u-boot.bin
+boot/u-boot7.bin
+boot/uboot.env
+etc/fw_env.config
+etc/kernel/postinst.d/u-boot
+etc/kernel/postrm.d/u-boot
+usr/bin/fw_printenv
+usr/bin/fw_setenv

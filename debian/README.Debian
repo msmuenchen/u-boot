@@ -1,0 +1,6 @@
+u-boot for Debian
+-----------------
+
+Only build this package using debian/rules binary.
+
+ -- Marco Schuster <m.schuster91@googlemail.com>  Sun, 29 Nov 2015 19:52:59 +0000

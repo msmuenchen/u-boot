@@ -1,0 +1,16 @@
+u-boot (2016.01-rpi2-4) UNRELEASED; urgency=medium
+
+  [ Marco Schuster ]
+  * Non-maintainer upload.
+  * fix build
+  * add postrm
+  * add kernel/postinst hook
+  * proper dch
+
+ -- Marco Schuster <m.schuster91@googlemail.com>  Sun, 29 Nov 2015 23:40:27 +0000
+
+u-boot (2016.01-rpi2-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Marco Schuster <m.schuster91@googlemail.com>  Sun, 29 Nov 2015 19:52:59 +0000

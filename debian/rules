@@ -1,0 +1,55 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+export DH_VERBOSE = 1
+
+# see EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@ --parallel
+
+override_dh_auto_configure:
+	mkdir -p debian/build/pi1
+	mkdir -p debian/build/pi2
+	make O=debian/build/pi2 rpi_2_defconfig -j6
+	make O=debian/build/pi1 rpi_defconfig -j6
+
+override_dh_auto_clean:
+	rm -rf debian/build
+	dh_auto_clean
+
+override_dh_install:
+	mkdir -p debian/tmp/boot
+	mkdir -p debian/tmp/usr/bin
+	mkdir -p debian/tmp/etc/kernel/postinst.d
+	mkdir -p debian/tmp/etc/kernel/postrm.d
+	debian/mkknlimg --dtok debian/build/pi1/u-boot.bin debian/tmp/boot/u-boot.bin
+	debian/mkknlimg --dtok debian/build/pi2/u-boot.bin debian/tmp/boot/u-boot7.bin
+	cp debian/build/pi1/tools/env/fw_printenv debian/tmp/usr/bin/fw_printenv
+	cp debian/build/pi1/tools/env/fw_printenv debian/tmp/usr/bin/fw_setenv
+	cp debian/uboot.env debian/tmp/boot/uboot.env
+	cp debian/u-boot.hook debian/tmp/etc/kernel/postinst.d/u-boot
+	cp debian/u-boot.hook debian/tmp/etc/kernel/postrm.d/u-boot
+	echo "/boot/uboot.env 0x0 0x4000 0x4000 1" > debian/tmp/etc/fw_env.config
+	dh_install
+
+override_dh_auto_build:
+	make O=debian/build/pi2 -j6
+	make O=debian/build/pi1 -j6
+	make O=debian/build/pi1 env -j6
+
+override_dh_auto_test:
+	#skip

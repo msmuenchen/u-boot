@@ -1,0 +1,18 @@
+#!/bin/bash
+CURRENT_PI1=`find /boot/ -regextype sed -regex '.*/vmlinuz-.*-rpi$' -printf '%f\n'|sort -V|tail -n1`
+CURRENT_PI2=`find /boot/ -regextype sed -regex '.*/vmlinuz-.*-rpi2$' -printf '%f\n'|sort -V|tail -n1`
+
+if [ -n "${CURRENT_PI1}" ]; then
+	echo "Current pi1 kernel: $CURRENT_PI1"
+	fw_setenv kernel $CURRENT_PI1
+else
+	echo "No valid pi1 kernel found"
+	fw_setenv kernel
+fi
+if [ -n "${CURRENT_PI2}" ]; then
+	echo "Current pi2 kernel: $CURRENT_PI2"
+	fw_setenv kernel7 $CURRENT_PI2
+else
+	echo "No valid pi2 kernel found"
+	fw_setenv kernel7
+fi
